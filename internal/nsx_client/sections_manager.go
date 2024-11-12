@@ -34,6 +34,7 @@ func (c *Client) GetSgSections() ([]Section, error) {
 	endpoint := "/api/v1/search/query?query=resource_type:(FirewallSection)%20AND%20(tags.scope:%22ncp/cf_asg_name%22)"
 	respBody, err := c.makeGetRequest(endpoint)
 	if err != nil {return sections, err}
+
   err = json.Unmarshal(respBody, &response)
 	if err != nil {return sections, err}
 
@@ -42,12 +43,12 @@ func (c *Client) GetSgSections() ([]Section, error) {
 	for strInt(response.Cursor) < response.ResultCount {
 		respBody, err := c.makeGetRequest(endpoint + "&cursor=" + response.Cursor)
 		if err != nil {return sections, err}
+
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {return sections, err}
 
 		sections = append(sections, response.Results...)
 	}
-
 	return sections, nil
 }
 

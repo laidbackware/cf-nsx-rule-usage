@@ -37,7 +37,7 @@ func WriteSheet(ruleUsage collect_data.RuleUsage, outputFile string) (err error)
 			tableData:    buildTableArray(ruleUsage.UnusedRules),
 		},
 		{
-			sheetName: "all_rules",
+			sheetName: 		"all_rules",
 			sheetHeaders: headers,
 			columnWidths: widths,
 			tableData:    buildTableArray(ruleUsage.AllRules),

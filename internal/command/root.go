@@ -13,16 +13,15 @@ var nsxApi 					string
 var nsxUsername 		string
 var nsxPassword 		string
 var outputType 			string
-var outputFile	string
+var outputFile			string
 var skipVerify 			bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Version: cliVersion,
-	Use:     "cfnru",
-	Short:   "cfnru blah",
-	Long:    "cfnru blah",
-	// Example: fmt.Sprintf("%s\n\n%s\n\n%s\n\n%s\n\n%s\n\n%s", downloadUsage, getProductsUsage, getSubProductsUsage, getVersions, getFiles, getManifestExample),
+	Use:     "cfnru [args]",
+	Short:   "cfnru collects ASG rule usage stats from the NSX Manager",
+	Long:    "cfnru can be called with no arguments, so long as the correct environment variables are set",
 	Run: func(cmd *cobra.Command, args []string) {
 		l := log.New(os.Stderr, "", 0)
 		validateCredentials(cmd)

@@ -9,7 +9,7 @@ type RulesResponse struct {
 	Cursor      string    `json:"cursor"`
 	SortBy      string    `json:"sort_by"`
 	ResultCount int       `json:"result_count"`
-	Results     []Rule `json:"results"`
+	Results     []Rule 		`json:"results"`
 }
 type Destinations struct {
 	TargetDisplayName string `json:"target_display_name"`
@@ -61,6 +61,7 @@ func (c *Client) GetSectionRules(sectionId string) ([]Rule, error) {
 	for response.Cursor != "" {
 		respBody, err := c.makeGetRequest(endpoint + "&cursor=" + response.Cursor)
 		if err != nil {return rules, err}
+		
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {return rules, err}
 

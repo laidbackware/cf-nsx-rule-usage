@@ -23,7 +23,8 @@ import (
 
 type Client struct {
 	HttpClient *http.Client
-	XsrfToken  string
+	BaseUrl  	string
+	Header		http.Header
 }
 
 const (
@@ -33,43 +34,52 @@ const (
 var (
 	ErrorConnectionFailure = errors.New("login: server did not return 200 ok")
 	
-	api 			string
-	username 	string
-	password 	string
+	// HostName 			string
+	// AuthStr		string
+	// username 	string
+	// password 	string
 )
 
 // username, password
-func SetupClient(nsxApi, nsxUsername, nsxPassword string) (client *Client, err error) {
+func SetupClient(nsxApi, nsxUsername, nsxPassword string) (*Client, error) {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	api, username, password = nsxApi, nsxUsername, nsxPassword
-	CheckConnectivity(api)
-	
-	httpClient := &http.Client{Timeout: time.Duration(httpTimeoutSeconds) * time.Second}
-	//TODO setup auth session
-	
-	return &Client{HttpClient: httpClient}, nil
+	CheckConnectivity(nsxApi)
 
+	httpClient := &http.Client{
+		Timeout: time.Duration(httpTimeoutSeconds) * time.Second,
+		Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
+	}
+
+	authHeader := b64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", nsxUsername, nsxPassword)))
+
+	header := http.Header{
+		"accept":        {"application/json"},
+		"authorization": {"Basic " + authHeader},
+	}
+
+	client := &Client{
+		HttpClient: httpClient,
+		BaseUrl: "https://" + nsxApi,
+		Header: header,
+	}
+
+	return client, nil
 }
 
-func (c *Client) makeRequest(url string) ([]byte, error) {
+func (c *Client) makeGetRequest(endpoint string) ([]byte, error) {
 	var respBody []byte
-	if api == "" || username == "" || password == "" {
+	if c.BaseUrl == "" || c.Header == nil {
 		return respBody, errors.New("Client not initialized")
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", c.BaseUrl + endpoint, nil)
 	if err != nil {return respBody, err}
-
-		// Add request headers
-	authstr := b64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", username, password)))
-	req.Header = http.Header{
-		"accept":        {"application/json"},
-		"authorization": {"Basic " + authstr},
-	}
+	req.Header = c.Header
 
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {return respBody, err}
 	if resp.StatusCode != 200 {return respBody, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
+	
 	respBody, err = io.ReadAll(resp.Body)
 	if err != nil {return respBody, err}
 
@@ -77,8 +87,10 @@ func (c *Client) makeRequest(url string) ([]byte, error) {
 }
 
 func CheckConnectivity(api string) (err error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	httpClient := &http.Client{Timeout: time.Duration(httpTimeoutSeconds) * time.Second}
+	httpClient := &http.Client{
+		Timeout: time.Duration(httpTimeoutSeconds) * time.Second,
+		Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
+	}
 	var res *http.Response
 	res, err = httpClient.Get(fmt.Sprintf("https://%s", api))
 	if err != nil {return}

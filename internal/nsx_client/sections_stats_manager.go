@@ -1,13 +1,8 @@
 package nsx_client
 
 import (
-	b64 "encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"strconv"
 )
 
 type SectionStats struct {
@@ -29,29 +24,15 @@ type RuleStats struct {
 	Schema                    string `json:"_schema"`
 }
 
-func (c *Client) GetSectionsStats(api, user, password, sectionId string) ([]SectionStats, error) {
+func (c *Client) GetSectionsStats(sectionId string) ([]SectionStats, error) {
 	var sectionStats []SectionStats
-	url := fmt.Sprintf("https://%s/api/v1/firewall/sections/%s/rules/stats", api, sectionId)
-	req, err := http.NewRequest("GET", url, nil)
+
+	endpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules/stats", sectionId)
+	respBody, err := c.makeGetRequest(endpoint)
 	if err != nil {return sectionStats, err}
 
-	authstr := b64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", user, password)))
-
-	// Add request headers
-	req.Header = http.Header{
-		"accept":        {"application/json"},
-		"authorization": {"Basic " + authstr},
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {return sectionStats, err}
-	if resp.StatusCode != 200 {return sectionStats, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {return sectionStats, err}
   err = json.Unmarshal(respBody, &sectionStats)
 	if err != nil {return sectionStats, err}
-	defer resp.Body.Close()
 
 	return sectionStats, nil
-
 }

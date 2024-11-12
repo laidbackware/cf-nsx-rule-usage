@@ -25,7 +25,7 @@ type RuleUsage struct {
 func Run(nsxApi, nsxUsername, nsxPassword string, skipVerify bool) error {
 	client, err := nsx_client.SetupClient(nsxApi, nsxUsername, nsxPassword)
 	if err != nil {return err}
-	sections, err := client.GetSgSections(nsxApi, nsxUsername, nsxPassword)
+	sections, err := client.GetSgSections()
 	fmt.Println(len(sections))
 
 	return nil
@@ -34,7 +34,10 @@ func Run(nsxApi, nsxUsername, nsxPassword string, skipVerify bool) error {
 // func processSections(sections []nsx_client.Section) {
 // 	for _, section := range(sections) {
 // 		// Set start time
+
 // 		// Get rules
+// 		sectionStats, err := nsx_client.GetSectionsStats(section.ID)
+// 		if err != nil {return err}
 // 		// Get stats
 // 		// Iterate stats by index
 // 			// Add rule to all array

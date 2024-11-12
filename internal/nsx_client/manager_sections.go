@@ -2,12 +2,7 @@ package nsx_client
 
 import (
 	
-	b64 "encoding/base64"
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"strconv"
 )
 
@@ -31,48 +26,24 @@ type Section struct {
 	RuleCount        int    `json:"rule_count"`
 }
 
-func (c *Client) GetSgSections(api, user, password string) ([]Section, error) {
+func (c *Client) GetSgSections() ([]Section, error) {
 
 	var response SectionResponse
 	var sections []Section
 
-	baseEndpoint := "/api/v1/search/query"
-	baseQuery := "query=resource_type:(FirewallSection)%20AND%20(tags.scope:%22ncp/cf_asg_name%22)"
-	baseUrl := fmt.Sprintf("https://%s%s?%s", api, baseEndpoint, baseQuery)
-	
-	req, err := http.NewRequest("GET", baseUrl, nil)
-	if err != nil {return sections, err}
-
-	authstr := b64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", user, password)))
-
-	// Add request headers
-	req.Header = http.Header{
-		"accept":        {"application/json"},
-		"authorization": {"Basic " + authstr},
-	}
-
-	resp, err := c.HttpClient.Do(req)
-	if err != nil {return sections, err}
-	if resp.StatusCode != 200 {return sections, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
-	respBody, err := io.ReadAll(resp.Body)
+	endpoint := "/api/v1/search/query?query=resource_type:(FirewallSection)%20AND%20(tags.scope:%22ncp/cf_asg_name%22)"
+	respBody, err := c.makeGetRequest(endpoint)
 	if err != nil {return sections, err}
   err = json.Unmarshal(respBody, &response)
 	if err != nil {return sections, err}
-	defer resp.Body.Close()
 
 	sections = append(sections, response.Results...)
 
 	for strInt(response.Cursor) < response.ResultCount {
-		req.URL.RawQuery = baseQuery + "&cursor=" + response.Cursor
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {return sections, err}
-		if resp.StatusCode != 200 {return sections, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
-		respBody, err := io.ReadAll(resp.Body)
+		respBody, err := c.makeGetRequest(endpoint + "&cursor=" + response.Cursor)
 		if err != nil {return sections, err}
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {return sections, err}
-
-		defer resp.Body.Close()
 
 		sections = append(sections, response.Results...)
 	}

@@ -65,8 +65,8 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section) (
 				Target:				sectionRule.Destinations[0].TargetID,
 				Ports:				strings.Join(sectionRule.Services[0].Service.Destination_ports[:], ","),
 				Protocol:			sectionRule.Services[0].Service.L4Protocol,
-				Created:			time.Unix(section.CreateTime, 0).String(),
-				LastUpdated:	time.Unix(section.LastModifiedTime, 0).String(),
+				Created:			time.UnixMilli(section.CreateTime).String(),
+				LastUpdated:	time.UnixMilli(section.LastModifiedTime).String(),
 				HitCount:			sectionStats.Results[idx].HitCount,
 				PacketCount:	sectionStats.Results[idx].PacketCount,
 			}

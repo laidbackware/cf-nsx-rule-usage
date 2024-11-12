@@ -44,7 +44,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&nsxApi, "nsxApi", "a", "", "IP of FQDN of the NSX Manager [$NSX_API]")
 	rootCmd.PersistentFlags().StringVarP(&nsxUsername, "user", "u", "", "Username used to authenticate [$NSX_USER]")
 	rootCmd.PersistentFlags().StringVarP(&nsxPassword, "pass", "p", "", "Password used to authenticate [$NSX_PASS]")
-	rootCmd.PersistentFlags().StringVarP(&outputType, "type", "t", "json", "Output file type. [json, xlsx]. (default: xlsx)")
+	rootCmd.PersistentFlags().StringVarP(&outputType, "type", "t", "xlsx", "Output file type. [json, xlsx]. (default: xlsx)")
 	rootCmd.PersistentFlags().StringVarP(&outputFile, "file", "f", "", "Output file name. (default: report.xlsx)")
 	rootCmd.PersistentFlags().BoolVarP(&skipVerify, "skipVerify", "k", false, "Skip TLS verification")
 }

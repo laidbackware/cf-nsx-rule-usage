@@ -1,94 +1,69 @@
 package render_output
 
-// import (
-// 	"testing"
+import (
+	"testing"
 
-// 	"github.com/cloudfoundry/go-cfclient/v3/resource"
-// 	"github.com/laidbackware/cf-healthy-plugin/internal/collect_data"
-// 	"github.com/stretchr/testify/assert"
-// )
+	"github.com/laidbackware/cf-nsx-rule-usage/internal/collect_data"
+	"github.com/stretchr/testify/assert"
+)
 
-// func TestBuildTableArray(t *testing.T) {
-// 	sheetContents := map[string]map[string]map[string][]collect_data.Process{
-// 		"o1": {
-// 			"s1": {
-// 				"a1": {
-// 					collect_data.Process{
-// 						Type:      "web",
-// 						Instances: 1,
-// 						AppGuid:   "1-2",
-// 						HealthCheck: &resource.ProcessHealthCheck{
-// 							Type: "port",
-// 						},
-// 					},
-// 					collect_data.Process{
-// 						Type:      "worker",
-// 						Instances: 1,
-// 						AppGuid:   "1-2",
-// 						HealthCheck: &resource.ProcessHealthCheck{
-// 							Type: "http",
-// 							Data: resource.ProcessHealthCheckData{
-// 								InvocationTimeout: createIntPointer(30),
-// 								Interval:          createIntPointer(30),
-// 								Timeout:           createIntPointer(30),
-// 								Endpoint:          createStringPointer("blah"),
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 		"o2": {
-// 			"s2": {
-// 				"a2": {
-// 					collect_data.Process{
-// 						Type:      "web",
-// 						Instances: 1,
-// 						AppGuid:   "1-2",
-// 						HealthCheck: &resource.ProcessHealthCheck{
-// 							Type: "http",
-// 							Data: resource.ProcessHealthCheckData{
-// 								InvocationTimeout: createIntPointer(10),
-// 								Interval:          createIntPointer(30),
-// 								Timeout:           createIntPointer(30),
-// 								Endpoint:          createStringPointer("blah"),
-// 							},
-// 						},
-// 					},
-// 				},
-// 			},
-// 			"s3": {
-// 				"a3": {
-// 					collect_data.Process{
-// 						Type:      "web",
-// 						Instances: 1,
-// 						AppGuid:   "1-2",
-// 						HealthCheck: &resource.ProcessHealthCheck{
-// 							Type: "port",
-// 						},
-// 					},
-// 				},
-// 				"a4": {
-// 					collect_data.Process{
-// 						Type:      "web",
-// 						Instances: 1,
-// 						AppGuid:   "1-2",
-// 						HealthCheck: &resource.ProcessHealthCheck{
-// 							Type: "port",
-// 						},
-// 					},
-// 				},
-// 			},
-// 		},
-// 	}
-// 	tableArray := buildTableArray(sheetContents, true)
-// 	assert.Equal(t, len(tableArray), 5)
-// }
+func TestBuildTableArray(t *testing.T) {
+	sheetContents := map[string]map[string][]collect_data.Rule{
+		"f1": {
+			"asg1":{
+				collect_data.Rule{
+					Target: 			"1.1.1.1",
+					Ports: 				"443",
+					Protocol: 		"TCP",
+					Created: 			"1",
+					LastUpdated: 	"2",
+					HitCount: 		0,
+					PacketCount: 	0,
+				},
+				collect_data.Rule{
+					Target: 			"1.1.1.2",
+					Ports: 				"80",
+					Protocol: 		"TCP",
+					Created: 			"1",
+					LastUpdated: 	"2",
+					HitCount: 		0,
+					PacketCount: 	0,
+				},
+			},
+			"asg2":{
+				collect_data.Rule{
+					Target: 			"1.1.1.1",
+					Ports: 				"443",
+					Protocol: 		"TCP",
+					Created: 			"1",
+					LastUpdated: 	"2",
+					HitCount: 		0,
+					PacketCount: 	0,
+				},
+			},
+		},
+		"f2": {
+			"asg1":{
+				collect_data.Rule{
+					Target: 			"1.1.1.1",
+					Ports: 				"443",
+					Protocol: 		"TCP",
+					Created: 			"1",
+					LastUpdated: 	"2",
+					HitCount: 		0,
+					PacketCount: 	0,
+				},
+			},
+		},
+	}
+	tableArray := buildTableArray(sheetContents)
+	assert.Equal(t, len(tableArray), 4)
+}
 
-// func createIntPointer(x int) *int {
-// 	return &x
-// }
+func createIntPointer(x int) *int {
+	return &x
+}
 
-// func createStringPointer(s string) *string {
-// 	return &s
-// }
+func createStringPointer(s string) *string {
+	return &s
+}

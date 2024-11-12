@@ -31,7 +31,7 @@ func generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile str
 
 	switch outputType {
 	case "xlsx":
-		// handleError(render_output.WriteSheet(healthState, outputFile))
+		handleError(render_output.WriteSheet(ruleUsage, outputFile))
 	case "json":
 		handleError(render_output.WriteJSON(ruleUsage, outputFile))
 	}

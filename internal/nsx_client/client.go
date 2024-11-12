@@ -19,7 +19,7 @@ type Client struct {
 }
 
 const (
-	httpTimeoutSeconds = 3
+	httpTimeoutSeconds = 5
 )
 
 var (

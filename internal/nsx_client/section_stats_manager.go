@@ -24,8 +24,8 @@ type RuleStats struct {
 	Schema                    string `json:"_schema"`
 }
 
-func (c *Client) GetSectionsStats(sectionId string) ([]SectionStats, error) {
-	var sectionStats []SectionStats
+func (c *Client) GetSectionStats(sectionId string) (SectionStats, error) {
+	var sectionStats SectionStats
 
 	endpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules/stats", sectionId)
 	respBody, err := c.makeGetRequest(endpoint)

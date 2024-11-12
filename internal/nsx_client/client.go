@@ -3,22 +3,13 @@ package nsx_client
 import (
 
 	b64 "encoding/base64"
-	// "encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"strconv"
-	// "bytes"
 	"crypto/tls"
-	// "io"
 	"net/http"
-	// "net/url"
-	// "strings"
 	"time"
-
-	// "github.com/andybalholm/cascadia"
-	// "github.com/orirawlings/persistent-cookiejar"
-	// "golang.org/x/net/html"
 )
 
 type Client struct {
@@ -33,11 +24,6 @@ const (
 
 var (
 	ErrorConnectionFailure = errors.New("login: server did not return 200 ok")
-	
-	// HostName 			string
-	// AuthStr		string
-	// username 	string
-	// password 	string
 )
 
 // username, password

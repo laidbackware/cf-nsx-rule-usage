@@ -1,21 +1,33 @@
 package nsx_client
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCheckConnectivity(t *testing.T){
-	err := CheckConnectivity("192.168.1.31")
+	err := CheckConnectivity(mustEnv(t, "NSX_API"))
 	assert.Nil(t, err)
 
 }
 
 func TestRequest(t *testing.T){
-	c, err := SetupClient("192.168.1.31", "admin", "VMware1!VMware1!!") 
+	c, err := SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS")) 
 	assert.Nil(t, err)
 	respBody, err := c.makeGetRequest("/api/v1/firewall/sections")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, respBody)
+}
+
+func mustEnv(t *testing.T, k string) string {
+	t.Helper()
+
+	if v, ok := os.LookupEnv(k); ok {
+		return v
+	}
+
+	t.Fatalf("expected environment variable %q", k)
+	return ""
 }

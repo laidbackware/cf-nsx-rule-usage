@@ -1,28 +1,15 @@
 package nsx_client
 
 import (
-	"crypto/tls"
-	"net/http"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var testingClient = Client{
-	HttpClient: &http.Client{
-		Timeout: time.Duration(5) * time.Second,
-		Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
-	},
-	BaseUrl: "https://192.168.1.31",
-	Header: http.Header{
-		"accept":        {"application/json"},
-		"authorization": {"Basic YWRtaW46Vk13YXJlMSFWTXdhcmUxISE"},
-	},
-}
-
 func TestGetSgSections(t *testing.T) {
-	sections, err := testingClient.GetSgSections()
+	client, err := SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"))
+	assert.Nil(t, err)
+	sections, err := client.GetSgSections()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, sections)
 }

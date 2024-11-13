@@ -25,12 +25,13 @@ func generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile str
 		}
 	}
 
-	// var healthState collect_data.HealthState
-	ruleUsage, err := collect_data.CollectData(nsxApi, nsxUsername, nsxPassword, skipVerify)
+	log.Printf("Collecting data from NSX...\n")
+	ruleUsage, err := collect_data.CollectData(nsxApi, nsxUsername, nsxPassword, skipVerify, log)
 	handleError(err)
 
 	switch outputType {
 	case "xlsx":
+		log.Printf("Writing to spreadsheet...\n")
 		handleError(render_output.WriteSheet(ruleUsage, outputFile))
 	case "json":
 		handleError(render_output.WriteJSON(ruleUsage, outputFile))

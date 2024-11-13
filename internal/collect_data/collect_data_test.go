@@ -2,6 +2,7 @@ package collect_data
 
 import (
 	"os"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,7 +16,8 @@ func TestProcessSections(t *testing.T){
 	sections, err := client.GetSgSections()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, sections)
-	rulesUsage, err := processSections(client, sections)
+	l := log.New(os.Stderr, "", 0)
+	rulesUsage, err := processSections(client, sections, l)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, rulesUsage)
 }

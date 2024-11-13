@@ -27,26 +27,27 @@ type RuleUsage struct {
 
 var ruleUsage RuleUsage
 
-func CollectData(nsxApi, nsxUsername, nsxPassword string, skipVerify bool) (RuleUsage, error) {
+func CollectData(nsxApi, nsxUsername, nsxPassword string, skipVerify bool, log Logger) (RuleUsage, error) {
 	client, err := nsx_client.SetupClient(nsxApi, nsxUsername, nsxPassword)
 	if err != nil {return ruleUsage, err}
 
 	sections, err := client.GetSgSections()
 	if err != nil {return ruleUsage, err}
 
-	_, err = processSections(client, sections)
+	_, err = processSections(client, sections, log)
 	if err != nil {return ruleUsage, err}
 
 	return ruleUsage, nil
 }
 
-func processSections(client *nsx_client.Client, sections []nsx_client.Section) (RuleUsage, error) {
-	// var ruleUsage RuleUsage
+func processSections(client *nsx_client.Client, sections []nsx_client.Section, log Logger) (RuleUsage, error) {
 	var rule Rule
 	ruleUsage.AllRules = make(map[string]map[string][]Rule)
 	ruleUsage.UnusedRules = make(map[string]map[string][]Rule)
 
+	log.Printf("Processing sections...")
 	for _, section := range(sections) {
+		startTime := time.Now()
 		foundationName, err := findTag("ncp/cluster", section.DisplayName, section.Tags)
 		if err != nil {return ruleUsage, err}
 
@@ -74,6 +75,12 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section) (
 			if rule.HitCount == 0 {
 				addRule(foundationName, asgName, ruleUsage.UnusedRules, rule)
 			}
+		}
+
+		elapsedMillis := time.Since(startTime).Milliseconds()
+		// Ensure that no more than 100 requests per second can be made to prevent NSX API rate limiting
+		if elapsedMillis < 10 {
+			time.Sleep(time.Duration(11 - elapsedMillis) * time.Millisecond)
 		}
 	}
 

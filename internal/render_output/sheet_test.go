@@ -59,11 +59,3 @@ func TestBuildTableArray(t *testing.T) {
 	tableArray := buildTableArray(sheetContents)
 	assert.Equal(t, len(tableArray), 4)
 }
-
-func createIntPointer(x int) *int {
-	return &x
-}
-
-func createStringPointer(s string) *string {
-	return &s
-}

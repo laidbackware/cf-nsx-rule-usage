@@ -1,14 +1,14 @@
 package nsx_client
 
 import (
-
-	b64 "encoding/base64"
+	"bytes"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
-	"crypto/tls"
 	"net/http"
+	"net/http/cookiejar"
+	"strconv"
 	"time"
 )
 
@@ -16,29 +16,41 @@ type Client struct {
 	HttpClient 	*http.Client
 	BaseUrl  		string
 	Header			http.Header
+	XsrfToken		string
 }
 
 const httpTimeoutSeconds = 5
 
 func SetupClient(nsxApi, nsxUsername, nsxPassword string) (*Client, error) {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-	CheckConnectivity(nsxApi)
+	baseUrl := "https://" + nsxApi
+	CheckConnectivity(baseUrl)
+
+	jar, _ := cookiejar.New(nil)
 
 	httpClient := &http.Client{
 		Timeout: 		time.Duration(httpTimeoutSeconds) * time.Second,
 		Transport: 	&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
+		Jar: jar,
 	}
 
-	authHeader := b64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", nsxUsername, nsxPassword)))
+	postBody := []byte(fmt.Sprintf("j_username=%s&j_password=%s", nsxUsername, nsxPassword))
+	req, err := http.NewRequest("POST", baseUrl + "/api/session/create", bytes.NewBuffer(postBody))
+	if err != nil {return nil, err}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := httpClient.Do(req)
+	if err != nil {return nil, err}
+	if resp.StatusCode != 200 {return nil, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
+	defer resp.Body.Close()
 
 	header := http.Header{
-		"accept":        {"application/json"},
-		"authorization": {"Basic " + authHeader},
+		"accept":       	{"application/json"},
+		"x-xsrf-token":		{resp.Header.Get("X-Xsrf-Token")},
 	}
 
 	client := &Client{
 		HttpClient: httpClient,
-		BaseUrl: 		"https://" + nsxApi,
+		BaseUrl: 		baseUrl,
 		Header: 		header,
 	}
 
@@ -58,9 +70,11 @@ func (c *Client) makeGetRequest(endpoint string) ([]byte, error) {
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {return respBody, err}
 	if resp.StatusCode != 200 {return respBody, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
+	defer resp.Body.Close()
 	
 	respBody, err = io.ReadAll(resp.Body)
 	if err != nil {return respBody, err}
+
 
 	return respBody, nil
 }
@@ -71,7 +85,7 @@ func CheckConnectivity(api string) (err error) {
 		Transport: 	&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
 	}
 	var res *http.Response
-	res, err = httpClient.Get(fmt.Sprintf("https://%s", api))
+	res, err = httpClient.Get(fmt.Sprintf(api))
 	if err != nil {return}
 
 	if res.StatusCode != 200 {

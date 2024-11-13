@@ -85,7 +85,7 @@ func CheckConnectivity(api string) (err error) {
 		Transport: 	&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
 	}
 	var res *http.Response
-	res, err = httpClient.Get(fmt.Sprintf(api))
+	res, err = httpClient.Get(api)
 	if err != nil {return}
 
 	if res.StatusCode != 200 {

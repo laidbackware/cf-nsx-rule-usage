@@ -49,35 +49,32 @@ func WriteSheet(ruleUsage collect_data.RuleUsage, outputFile string) (err error)
 	return
 }
 
-func renderSheet(allSheetsContents []sheetContent, outputFile string) (err error) {
+func renderSheet(allSheetsContents []sheetContent, outputFile string) (error) {
 	// Initialize file
 	f := excelize.NewFile()
 	defer func() {
-		if err = f.Close(); err != nil {
+		if err := f.Close(); err != nil {
 			return
 		}
 	}()
 
 	// Walk sheets and render
 	for _, sheetContents := range allSheetsContents {
-		_, err = f.NewSheet(sheetContents.sheetName)
-		if err != nil {
-			return
-		}
+		_, err := f.NewSheet(sheetContents.sheetName)
+		if err != nil {return err}
 		setColumnWidths(f, sheetContents.sheetName, sheetContents.columnWidths)
 
 		// Write headers
 		writeLine(f, sheetContents.sheetName, sheetContents.sheetHeaders, 0)
 
-		// Write lines from array
 		for row, line := range sheetContents.tableData {
 			writeLine(f, sheetContents.sheetName, line, row + 1)
 		}
 
 	}
 	_ = f.DeleteSheet("Sheet1")
-	err = f.SaveAs(outputFile)
-	return
+	err := f.SaveAs(outputFile)
+	return err
 
 }
 

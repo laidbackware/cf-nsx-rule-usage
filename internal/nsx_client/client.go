@@ -1,13 +1,12 @@
 package nsx_client
 
 import (
-	"bytes"
+	b64 "encoding/base64"
 	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"strconv"
 	"time"
 )
@@ -26,29 +25,32 @@ func SetupClient(nsxApi, nsxUsername, nsxPassword string, skipVerify, debug bool
 	baseUrl := "https://" + nsxApi
 	CheckConnectivity(baseUrl)
 
-	jar, _ := cookiejar.New(nil)
 
 	httpClient := &http.Client{
 		Timeout: 		time.Duration(httpTimeoutSeconds) * time.Second,
 		Transport: 	&http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}},
-		Jar: jar,
+	}
+	
+	authstr := b64.URLEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", nsxUsername, nsxPassword)))
+	
+	header := http.Header{
+		"accept":       	{"application/json"},
+		"authorization": 	{"Basic " + authstr},
 	}
 
-	postBody := []byte(fmt.Sprintf("j_username=%s&j_password=%s", nsxUsername, nsxPassword))
-	req, err := http.NewRequest("POST", baseUrl + "/api/session/create", bytes.NewBuffer(postBody))
+	// Test user credebtials
+	req, err := http.NewRequest("GET", baseUrl + "/api/v1/cluster-manager/status", nil)
 	if err != nil {return nil, err}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
+	req.Header = header
 	resp, err := httpClient.Do(req)
 	if err != nil {return nil, err}
+	if resp.StatusCode == 403 {
+		return nil, errors.New("invalid username or password")
+	}
 	if resp.StatusCode != 200 {return nil, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
 	defer resp.Body.Close()
 
-	header := http.Header{
-		"accept":       	{"application/json"},
-		"x-xsrf-token":		{resp.Header.Get("X-Xsrf-Token")},
-	}
-
+	
 	client := &Client{
 		HttpClient: httpClient,
 		BaseUrl: 		baseUrl,
@@ -81,7 +83,6 @@ func (c *Client) makeGetRequest(endpoint string) ([]byte, error) {
 	}
 	
 	if err != nil {return respBody, err}
-
 
 	return respBody, nil
 }

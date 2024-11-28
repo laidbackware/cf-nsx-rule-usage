@@ -11,12 +11,12 @@ import (
 )
 
 func TestProcessSections(t *testing.T){
-	client, err := nsx_client.SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"))
+	l := log.New(os.Stderr, "", 0)
+	client, err := nsx_client.SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"), true, false, l)
 	assert.Nil(t, err)
 	sections, err := client.GetSgSections()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, sections)
-	l := log.New(os.Stderr, "", 0)
 	rulesUsage, err := processSections(client, sections, l)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, rulesUsage)

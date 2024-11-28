@@ -49,7 +49,7 @@ func (c *Client) GetSectionRules(sectionId string) ([]Rule, error) {
 	var response RulesResponse
 	var rules []Rule
 
-	endpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules", sectionId)
+	endpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules?page_size=500", sectionId)
 	respBody, err := c.makeGetRequest(endpoint)
 	if err != nil {return rules, err}
 

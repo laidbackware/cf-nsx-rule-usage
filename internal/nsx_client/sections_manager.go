@@ -3,6 +3,7 @@ package nsx_client
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 type SectionResponse struct {
@@ -28,7 +29,7 @@ func (c *Client) GetSgSections() ([]Section, error) {
 	var sections 				[]Section
 	var returnSections 	[]Section
 
-	endpoint := "/api/v1/firewall/sections"
+	endpoint := "/api/v1/firewall/sections?page_size=500"
 	respBody, err := c.makeGetRequest(endpoint)
 	if err != nil {return sections, err}
 
@@ -38,6 +39,7 @@ func (c *Client) GetSgSections() ([]Section, error) {
 	sections = append(sections, response.Results...)
 
 	for response.Cursor != "" {
+		time.Sleep(500 * time.Millisecond) 
 		respBody, err := c.makeGetRequest(endpoint + "&cursor=" + response.Cursor)
 		if err != nil {return sections, err}
 

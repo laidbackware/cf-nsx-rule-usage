@@ -17,11 +17,12 @@ type Client struct {
 	BaseUrl  		string
 	Header			http.Header
 	XsrfToken		string
+	log 				Logger
 }
 
-const httpTimeoutSeconds = 5
+const httpTimeoutSeconds = 30
 
-func SetupClient(nsxApi, nsxUsername, nsxPassword string) (*Client, error) {
+func SetupClient(nsxApi, nsxUsername, nsxPassword string, skipVerify, debug bool, log Logger) (*Client, error) {
 	baseUrl := "https://" + nsxApi
 	CheckConnectivity(baseUrl)
 
@@ -52,6 +53,7 @@ func SetupClient(nsxApi, nsxUsername, nsxPassword string) (*Client, error) {
 		HttpClient: httpClient,
 		BaseUrl: 		baseUrl,
 		Header: 		header,
+		log:				log,
 	}
 
 	return client, nil
@@ -69,10 +71,15 @@ func (c *Client) makeGetRequest(endpoint string) ([]byte, error) {
 
 	resp, err := c.HttpClient.Do(req)
 	if err != nil {return respBody, err}
-	if resp.StatusCode != 200 {return respBody, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
 	defer resp.Body.Close()
-	
 	respBody, err = io.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		return respBody, errors.New(
+			"Return code: " + strconv.Itoa(resp.StatusCode) + 
+			"\nfrom endpoint: " + endpoint +
+			"\nwith response: " + string(respBody[:]))
+	}
+	
 	if err != nil {return respBody, err}
 
 

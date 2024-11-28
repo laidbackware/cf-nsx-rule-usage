@@ -27,8 +27,8 @@ type RuleUsage struct {
 
 var ruleUsage RuleUsage
 
-func CollectData(nsxApi, nsxUsername, nsxPassword string, skipVerify bool, log Logger) (RuleUsage, error) {
-	client, err := nsx_client.SetupClient(nsxApi, nsxUsername, nsxPassword)
+func CollectData(nsxApi, nsxUsername, nsxPassword string, skipVerify, debug bool, log Logger) (RuleUsage, error) {
+	client, err := nsx_client.SetupClient(nsxApi, nsxUsername, nsxPassword, skipVerify, debug, log)
 	if err != nil {return ruleUsage, err}
 
 	sections, err := client.GetSgSections()

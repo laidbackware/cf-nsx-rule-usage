@@ -8,7 +8,7 @@ import (
 	"github.com/laidbackware/cf-nsx-rule-usage/internal/render_output"
 )
 
-func generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile string, skipVerify bool, log Logger) {
+func generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile string, skipVerify, debug bool, log Logger) {
 
 	if outputType != "json" && outputType != "xlsx" {
 		log.Fatalf("Requested output format '%s'  is invalid. Please use: [json, xlsx]", outputType)
@@ -26,7 +26,7 @@ func generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile str
 	}
 
 	log.Printf("Collecting data from NSX...\n")
-	ruleUsage, err := collect_data.CollectData(nsxApi, nsxUsername, nsxPassword, skipVerify, log)
+	ruleUsage, err := collect_data.CollectData(nsxApi, nsxUsername, nsxPassword, skipVerify, debug, log)
 	handleError(err)
 
 	switch outputType {

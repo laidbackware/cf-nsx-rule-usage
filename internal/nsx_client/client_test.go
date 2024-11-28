@@ -1,6 +1,7 @@
 package nsx_client
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -8,7 +9,8 @@ import (
 )
 
 func TestSetupClient(t *testing.T) {
-	_, err := SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"))
+	l := log.New(os.Stderr, "", 0)
+	_, err := SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"), true, false, l)
 	assert.Nil(t, err)
 }
 
@@ -19,7 +21,8 @@ func TestCheckConnectivity(t *testing.T){
 }
 
 func TestRequest(t *testing.T){
-	c, err := SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS")) 
+	l := log.New(os.Stderr, "", 0)
+	c, err := SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"), true, false, l) 
 	assert.Nil(t, err)
 	respBody, err := c.makeGetRequest("/api/v1/firewall/sections")
 	assert.Nil(t, err)

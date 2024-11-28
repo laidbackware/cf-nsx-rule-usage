@@ -8,13 +8,16 @@ import (
 
 )
 
-var cliVersion 			string
-var nsxApi 					string
-var nsxUsername 		string
-var nsxPassword 		string
-var outputType 			string
-var outputFile			string
-var skipVerify 			bool
+var (
+	cliVersion 		string
+	nsxApi 				string
+	nsxUsername 	string
+	nsxPassword 	string
+	outputType 		string
+	outputFile		string
+	skipVerify 		bool
+	debug					bool
+)  
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -36,7 +39,7 @@ func Execute() {
 }
 
 func runReport(l Logger) {
-	generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile, skipVerify, l)
+	generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile, skipVerify, debug, l)
 }
 
 func init() {
@@ -46,6 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&outputType, "type", "t", "xlsx", "Output file type. [json, xlsx]. (default: xlsx)")
 	rootCmd.PersistentFlags().StringVarP(&outputFile, "file", "f", "", "Output file name. (default: report.xlsx)")
 	rootCmd.PersistentFlags().BoolVarP(&skipVerify, "skipVerify", "k", false, "Skip TLS verification")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "verbose", "v", false, "Verbose log HTTP requests")
 }
 
 func handleError(err error) {

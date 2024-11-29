@@ -2,10 +2,12 @@ package collect_data
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/laidbackware/cf-nsx-rule-usage/internal/nsx_client"
+	"github.com/schollz/progressbar/v3"
 )
 
 type Rule struct {
@@ -31,21 +33,26 @@ func CollectData(nsxApi, nsxUsername, nsxPassword string, skipVerify, debug bool
 	client, err := nsx_client.SetupClient(nsxApi, nsxUsername, nsxPassword, skipVerify, debug, log)
 	if err != nil {return ruleUsage, err}
 
-	sections, err := client.GetSgSections()
+	sections, err := client.GetSgSections(debug, log)
 	if err != nil {return ruleUsage, err}
 
-	_, err = processSections(client, sections, log)
+	_, err = processSections(client, sections, debug, log)
 	if err != nil {return ruleUsage, err}
 
 	return ruleUsage, nil
 }
 
-func processSections(client *nsx_client.Client, sections []nsx_client.Section, log Logger) (RuleUsage, error) {
+func processSections(client *nsx_client.Client, sections []nsx_client.Section, debug bool,log Logger) (RuleUsage, error) {
 	var rule Rule
+	var ports string
+	var bar *progressbar.ProgressBar
 	ruleUsage.AllRules = make(map[string]map[string][]Rule)
 	ruleUsage.UnusedRules = make(map[string]map[string][]Rule)
 
 	log.Printf("Processing sections...")
+	if !debug{
+		bar = progressbar.Default(int64(len(sections)))
+	}
 	for _, section := range(sections) {
 		startTime := time.Now()
 		foundationName, err := findTag("ncp/cluster", section.DisplayName, section.Tags)
@@ -54,17 +61,23 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section, l
 		asgName, err := findTag("ncp/cf_asg_name", section.DisplayName, section.Tags)
 		if err != nil {return ruleUsage, err}
 
-		sectionRules, err := client.GetSectionRules(section.ID)
+		sectionRules, err := client.GetSectionRules(section.ID, debug, log)
 		if err != nil {return ruleUsage, err}
 
-		sectionStats, err := client.GetSectionStats(section.ID)
+		sectionStats, err := client.GetSectionStats(section.ID, debug, log)
 		if err != nil {return ruleUsage, err}
 
 		for idx, sectionRule := range(sectionRules) {
+			if debug {log.Printf("Building struct: " + section.DisplayName + ":" + sectionRule.DisplayName + ":" + strconv.Itoa(idx))}
+			if sectionRule.DisplayName[0:8] == "all_all" {
+				ports = "all"
+			} else {
+				ports = strings.Join(sectionRule.Services[0].Service.Destination_ports[:], ",")
+			}
 			rule = Rule{
 				// Assume a single target in all ASG rules
 				Target:				sectionRule.Destinations[0].TargetID,
-				Ports:				strings.Join(sectionRule.Services[0].Service.Destination_ports[:], ","),
+				Ports:				ports,
 				Protocol:			sectionRule.Services[0].Service.L4Protocol,
 				Created:			time.UnixMilli(section.CreateTime).Format(time.DateTime),
 				LastUpdated:	time.UnixMilli(section.LastModifiedTime).Format(time.DateTime),
@@ -79,8 +92,11 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section, l
 
 		elapsedMillis := time.Since(startTime).Milliseconds()
 		// Ensure that no more than 100 requests per second can be made to prevent NSX API rate limiting
-		if elapsedMillis < 10 {
-			time.Sleep(time.Duration(11 - elapsedMillis) * time.Millisecond)
+		if elapsedMillis < 20 {
+			time.Sleep(time.Duration(21 - elapsedMillis) * time.Millisecond)
+		}
+		if !debug{
+			bar.Add(1)
 		}
 	}
 

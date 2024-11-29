@@ -45,27 +45,27 @@ type Rule struct {
 	Revision             int            `json:"_revision"`
 }
 
-func (c *Client) GetSectionRules(sectionId string) ([]Rule, error) {
-	var response RulesResponse
+func (c *Client) GetSectionRules(sectionId string, debug bool, log Logger) ([]Rule, error) {
 	var rules []Rule
+	
+	initialEndpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules?page_size=500", sectionId)
+	endpoint := initialEndpoint
+	
+	for {
+		if debug {log.Printf("Requesting: " + endpoint)}
+		var response RulesResponse
 
-	endpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules?page_size=500", sectionId)
-	respBody, err := c.makeGetRequest(endpoint)
-	if err != nil {return rules, err}
-
-  err = json.Unmarshal(respBody, &response)
-	if err != nil {return rules, err}
-
-	rules = append(rules, response.Results...)
-
-	for response.Cursor != "" {
-		respBody, err := c.makeGetRequest(endpoint + "&cursor=" + response.Cursor)
+		respBody, err := c.makeGetRequest(endpoint)
 		if err != nil {return rules, err}
-		
+	
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {return rules, err}
-
+	
 		rules = append(rules, response.Results...)
+		if response.Cursor == "" {
+			break
+		}
+		endpoint = initialEndpoint + "&cursor=" + response.Cursor
 	}
 
 	return rules, nil

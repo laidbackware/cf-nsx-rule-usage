@@ -24,8 +24,8 @@ func WriteSheet(ruleUsage collect_data.RuleUsage, outputFile string) (err error)
 		"Target",
 		"Ports",
 		"Protocol",
-		"Created",
-		"Last Updated",
+		"ASG Created",
+		"ASG Last Updated",
 		"Hit Count",
 		"Packet Count",
 	}

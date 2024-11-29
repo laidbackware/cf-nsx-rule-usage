@@ -14,10 +14,10 @@ func TestProcessSections(t *testing.T){
 	l := log.New(os.Stderr, "", 0)
 	client, err := nsx_client.SetupClient(mustEnv(t, "NSX_API"), mustEnv(t, "NSX_USER"), mustEnv(t, "NSX_PASS"), true, false, l)
 	assert.Nil(t, err)
-	sections, err := client.GetSgSections()
+	sections, err := client.GetSgSections(false, l)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, sections)
-	rulesUsage, err := processSections(client, sections, l)
+	rulesUsage, err := processSections(client, sections, false, l)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, rulesUsage)
 }

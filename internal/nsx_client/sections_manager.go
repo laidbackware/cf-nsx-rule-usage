@@ -3,7 +3,7 @@ package nsx_client
 import (
 	"encoding/json"
 	"fmt"
-	"time"
+	"strconv"
 )
 
 type SectionResponse struct {
@@ -23,30 +23,30 @@ type Section struct {
 	ID               string `json:"id"`
 }
 
-func (c *Client) GetSgSections() ([]Section, error) {
+func (c *Client) GetSgSections(debug bool, log Logger) ([]Section, error) {
 
-	var response 				SectionResponse
 	var sections 				[]Section
 	var returnSections 	[]Section
+	
+	initialEndpoint := "/api/v1/firewall/sections?page_size=500"
+	endpoint := initialEndpoint
 
-	endpoint := "/api/v1/firewall/sections?page_size=500"
-	respBody, err := c.makeGetRequest(endpoint)
-	if err != nil {return sections, err}
-
-  err = json.Unmarshal(respBody, &response)
-	if err != nil {return sections, err}
-
-	sections = append(sections, response.Results...)
-
-	for response.Cursor != "" {
-		time.Sleep(500 * time.Millisecond) 
-		respBody, err := c.makeGetRequest(endpoint + "&cursor=" + response.Cursor)
+	// handle pagination
+	for {
+		if debug {log.Printf("Requesting: " + endpoint)}
+		var response 	SectionResponse
+		respBody, err := c.makeGetRequest(endpoint)
 		if err != nil {return sections, err}
-
+		
 		err = json.Unmarshal(respBody, &response)
 		if err != nil {return sections, err}
-
+		
 		sections = append(sections, response.Results...)
+
+		if response.Cursor == "" {
+			break
+		}
+		endpoint = initialEndpoint + "&cursor=" + response.Cursor
 	}
 
 	// collate only sections that contain "ncp/cf_asg_name" tag
@@ -56,6 +56,8 @@ func (c *Client) GetSgSections() ([]Section, error) {
 			returnSections = append(returnSections, section)
 		}
 	}
+
+	log.Printf("Collected " + strconv.Itoa(len(returnSections))  + " CF tagged firewall sections")
 
 	return returnSections, nil
 }

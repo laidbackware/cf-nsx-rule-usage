@@ -24,10 +24,11 @@ type RuleStats struct {
 	Schema                    string `json:"_schema"`
 }
 
-func (c *Client) GetSectionStats(sectionId string) (SectionStats, error) {
+func (c *Client) GetSectionStats(sectionId string, debug bool, log Logger) (SectionStats, error) {
 	var sectionStats SectionStats
-
+	
 	endpoint := fmt.Sprintf("/api/v1/firewall/sections/%s/rules/stats", sectionId)
+	if debug {log.Printf("Requesting: " + endpoint)}
 	respBody, err := c.makeGetRequest(endpoint)
 	if err != nil {return sectionStats, err}
 

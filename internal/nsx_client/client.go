@@ -50,7 +50,6 @@ func SetupClient(nsxApi, nsxUsername, nsxPassword string, skipVerify, debug bool
 	if resp.StatusCode != 200 {return nil, errors.New("Return code: " + strconv.Itoa(resp.StatusCode))}
 	defer resp.Body.Close()
 
-	
 	client := &Client{
 		HttpClient: httpClient,
 		BaseUrl: 		baseUrl,

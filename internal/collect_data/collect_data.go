@@ -69,14 +69,24 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section, d
 
 		for idx, sectionRule := range(sectionRules) {
 			if debug {log.Printf("Building struct: " + section.DisplayName + ":" + sectionRule.DisplayName + ":" + strconv.Itoa(idx))}
+			
 			if sectionRule.DisplayName[0:8] == "all_all" {
 				ports = "all"
 			} else {
 				ports = strings.Join(sectionRule.Services[0].Service.Destination_ports[:], ",")
 			}
+
+			// If ASG destination is 0.0.0.0/0, no destination is set in NSX, meanning any
+			var destination string
+			if sectionRule.Destinations != nil {
+				destination = sectionRule.Destinations[0].TargetID
+			} else {
+				destination = "ANY"
+			}
+
 			rule = Rule{
 				// Assume a single target in all ASG rules
-				Target:				sectionRule.Destinations[0].TargetID,
+				Target:				destination,
 				Ports:				ports,
 				Protocol:			sectionRule.Services[0].Service.L4Protocol,
 				Created:			time.UnixMilli(section.CreateTime).Format(time.DateTime),

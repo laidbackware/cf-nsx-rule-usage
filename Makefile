@@ -1,7 +1,7 @@
 NAME ?= sg-nsx-plugin
 OUTPUT = ./dist/$(NAME)
 GO_SOURCES = $(shell find . -type f -name '*.go')
-VERSION ?= 0.1.0
+VERSION ?= 0.1.2
 GOLANGCI_LINT_VERSION := $(shell golangci-lint --version 2>/dev/null)
 
 .PHONY: all

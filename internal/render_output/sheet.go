@@ -87,7 +87,8 @@ func renderSheet(allSheetsContents []sheetContent, outputFile string) (error) {
 		for row, line := range sheetContents.tableData {
 			writeLine(f, sheetContents.sheetName, line, row + 1)
 		}
-
+		bottomRightCell, _ := excelize.CoordinatesToCellName(len(sheetContents.sheetHeaders) + 1, len(sheetContents.tableData) + 2)
+		f.AddTable(sheetContents.sheetName, &excelize.Table{Range: fmt.Sprintf("A1:%s", bottomRightCell)})
 	}
 	_ = f.DeleteSheet("Sheet1")
 	err := f.SaveAs(outputFile)

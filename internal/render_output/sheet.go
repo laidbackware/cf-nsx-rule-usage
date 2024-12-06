@@ -47,7 +47,7 @@ func WriteSheet(ruleUsage collect_data.RuleUsage, outputFile string) (err error)
 			sheetHeaders: []excelize.Cell{
 				{Value: "Foundation Name"},
 				{Value: "ASG Name"},
-				{Value: "Used rules"},
+				{Value: "Unused rules"},
 				{Value: "Total rules"},
 				{Value: "Used percentage"},
 			},

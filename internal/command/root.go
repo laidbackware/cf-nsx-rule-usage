@@ -15,6 +15,7 @@ var (
 	nsxPassword 	string
 	outputType 		string
 	outputFile		string
+	unusedMonths	int
 	skipVerify 		bool
 	debug					bool
 )  
@@ -39,7 +40,7 @@ func Execute() {
 }
 
 func runReport(l Logger) {
-	generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile, skipVerify, debug, l)
+	generateReport(nsxApi, nsxUsername, nsxPassword, outputType, outputFile, unusedMonths, skipVerify, debug, l)
 }
 
 func init() {
@@ -48,6 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&nsxPassword, "pass", "p", "", "Password used to authenticate [$NSX_PASS]")
 	rootCmd.PersistentFlags().StringVarP(&outputType, "type", "t", "xlsx", "Output file type. [json, xlsx]. (default: xlsx)")
 	rootCmd.PersistentFlags().StringVarP(&outputFile, "file", "f", "", "Output file name. (default: report.xlsx)")
+	rootCmd.PersistentFlags().IntVarP(&unusedMonths, "unused", "m", 3, "Highligh rules unused for X months. (default: 3)")
 	rootCmd.PersistentFlags().BoolVarP(&skipVerify, "skipVerify", "k", false, "Skip TLS verification")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "verbose", "v", false, "Verbose log HTTP requests")
 }

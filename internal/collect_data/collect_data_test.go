@@ -17,7 +17,7 @@ func TestProcessSections(t *testing.T){
 	sections, err := client.GetSgSections(false, l)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, sections)
-	rulesUsage, err := processSections(client, sections, false, l)
+	rulesUsage, err := processSections(client, sections, 3, false, l)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, rulesUsage)
 }

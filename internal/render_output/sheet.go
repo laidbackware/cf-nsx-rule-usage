@@ -16,7 +16,7 @@ type sheetContent struct {
 	tableData    [][]excelize.Cell
 }
 
-func WriteSheet(ruleUsage collect_data.RuleUsage, outputFile string) (err error) {
+func WriteSheet(ruleUsage collect_data.RuleUsage, unusedMonths int, outputFile string) (err error) {
 	headers := []excelize.Cell{
 		{Value: "Foundation Name"},
 		{Value: "ASG Name"},
@@ -41,6 +41,12 @@ func WriteSheet(ruleUsage collect_data.RuleUsage, outputFile string) (err error)
 			sheetHeaders: headers,
 			columnWidths: widths,
 			tableData:    buildTableArray(ruleUsage.AllRules),
+		},
+		{
+			sheetName: 		fmt.Sprintf("unused_in_%d_months", unusedMonths),
+			sheetHeaders: headers,
+			columnWidths: widths,
+			tableData:    buildTableArray(ruleUsage.UnusedRulesMonths),
 		},
 		{
 			sheetName: 		"ununsed_by_asg",

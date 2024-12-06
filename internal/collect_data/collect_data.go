@@ -23,31 +23,34 @@ type Rule struct {
 
 type RuleUsage struct {
 	// map[foundation_name]map[asg_name][]Rule
-	UnusedRules map[string]map[string][]Rule
-	AllRules		map[string]map[string][]Rule
+	UnusedRules				 	map[string]map[string][]Rule
+	UnusedRulesMonths 	map[string]map[string][]Rule
+	AllRules						map[string]map[string][]Rule
+
 }
 
 var ruleUsage RuleUsage
 
-func CollectData(nsxApi, nsxUsername, nsxPassword string, skipVerify, debug bool, log Logger) (RuleUsage, error) {
+func CollectData(nsxApi, nsxUsername, nsxPassword string, unusedMonths int, skipVerify, debug bool, log Logger) (RuleUsage, error) {
 	client, err := nsx_client.SetupClient(nsxApi, nsxUsername, nsxPassword, skipVerify, debug, log)
 	if err != nil {return ruleUsage, err}
 
 	sections, err := client.GetSgSections(debug, log)
 	if err != nil {return ruleUsage, err}
 
-	_, err = processSections(client, sections, debug, log)
+	_, err = processSections(client, sections, unusedMonths, debug, log)
 	if err != nil {return ruleUsage, err}
 
 	return ruleUsage, nil
 }
 
-func processSections(client *nsx_client.Client, sections []nsx_client.Section, debug bool,log Logger) (RuleUsage, error) {
+func processSections(client *nsx_client.Client, sections []nsx_client.Section, unusedMonths int, debug bool,log Logger) (RuleUsage, error) {
 	var rule Rule
 	var ports string
 	var bar *progressbar.ProgressBar
 	ruleUsage.AllRules = make(map[string]map[string][]Rule)
 	ruleUsage.UnusedRules = make(map[string]map[string][]Rule)
+	ruleUsage.UnusedRulesMonths = make(map[string]map[string][]Rule)
 
 	log.Printf("Processing sections...")
 	if !debug{
@@ -69,6 +72,10 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section, d
 
 		for idx, sectionRule := range(sectionRules) {
 			if debug {log.Printf("Building struct: " + section.DisplayName + ":" + sectionRule.DisplayName + ":" + strconv.Itoa(idx))}
+			oldSection := false
+			if time.UnixMilli(section.LastModifiedTime).Before(time.Now().AddDate(0, -unusedMonths,0)) {
+				oldSection = true
+			}
 			
 			if sectionRule.DisplayName[0:8] == "all_all" {
 				ports = "all"
@@ -97,6 +104,9 @@ func processSections(client *nsx_client.Client, sections []nsx_client.Section, d
 			addRule(foundationName, asgName, ruleUsage.AllRules, rule)
 			if rule.HitCount == 0 {
 				addRule(foundationName, asgName, ruleUsage.UnusedRules, rule)
+			}
+			if oldSection {
+				addRule(foundationName, asgName, ruleUsage.UnusedRulesMonths, rule)
 			}
 		}
 

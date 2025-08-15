@@ -12,7 +12,7 @@ import (
 
 type Rule struct {
 	Target 				string	`json:"target"`
-	Ports 				string	`json:"prots"`
+	Ports 				string	`json:"ports"`
 	Protocol 			string	`json:"protocol"`
 	Created 			string	`json:"created"`
 	LastUpdated 	string	`json:"last_updated"`
